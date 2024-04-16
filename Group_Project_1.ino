@@ -29,7 +29,7 @@ void setup() {
   Serial.print("Initiallizing BPM280...")
   if(!bpm.begin()){
     Serial.println("Unable to find a valid bpm280 sensor.");
-    while(1);
+    return; // terminates if unable to connect to sensor
   }
 
 //Checks if the SD card successfuly connects to Arduino
