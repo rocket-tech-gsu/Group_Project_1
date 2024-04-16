@@ -5,12 +5,16 @@
 #include <Wire.h>
 #include <MPU6050.h> //Imports MPU6050 library assuming it is the standard one by Electronic Cats
 
+#include <BMP280.h> // Importing BPM280 library
+
+
 #define LOG_FILE_NAME "rocket_data.csv" // Name of the log file on the SD card
 
 const int digitalPin = 10; //Variable for what pin the SD card module is connected to on the Arduino
 
 File dataFile; //File to write and log data to a file on SD card
 MPU6050 mpu; //Initalizes an accelerometer object
+BPM280 bpm; //Initializes the atmospheric presure object 
 
 void setup() {
   Wire.begin();
@@ -19,6 +23,13 @@ void setup() {
   while (!Serial) {
     // Wait for serial port to connect
     ;
+  }
+
+//Check if the BPM280 Sucesfully connect to the Arduino
+  Serial.print("Initiallizing BPM280...")
+  if(!bpm.begin()){
+    Serial.println("Unable to find a valid bpm280 sensor.");
+    while(1);
   }
 
 //Checks if the SD card successfuly connects to Arduino
@@ -62,6 +73,7 @@ void loop() {
   event.acceleration.z = az;
   
   logData(event);
+  readBMP280Data();
   delay(100);
 
  /*
@@ -112,3 +124,16 @@ void logData(sensors_event_t event) {
   dataFile.flush(); //Flushes the data to ensure it is immediately written to the SD card.
 }
 
+// function to read temperature and pressure from the BMP280 sensor and print the values to the Serial Monitor.
+void readBMP280Data() {
+  float temperature = bmp.readTemperature();
+  float pressure = bmp.readPressure() / 100.0F; // Convert Pa to hPa
+
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" °C");
+
+  Serial.print("Pressure: ");
+  Serial.print(pressure);
+  Serial.println(" hPa");
+}
